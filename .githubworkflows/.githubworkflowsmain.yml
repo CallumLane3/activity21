@@ -4,6 +4,10 @@ on:
   push:
     branches: 
       - main 
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   update_html_and_readme:
@@ -11,6 +15,21 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
-        name: Update index.html
+
+      - name: Create index.html if missing
+        run: |
+          if [ ! -f index.html ]; then
+            echo "<!DOCTYPE html><html><head><title>Activity 21</title></head><body><h1>Activity 21 Report</h1></body></html>" > index.html
+          fi
+
+      - name: Update index.html
         run: |
           sed -i '/<\/body>/i <p>Updated by Team Leader on '"$(date)"'</p>' index.html
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "CI/CD: Automated update to index.html"
+          git push
